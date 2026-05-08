@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Snapline</RootNamespace>
+    <AssemblyName>Snapline</AssemblyName>
+    <ApplicationIcon>Resources\Snapline.ico</ApplicationIcon>
+    <Version>1.0.9</Version>
+    <Company>studionope</Company>
+    <Product>Snapline</Product>
+    <Copyright>Copyright (c) studionope</Copyright>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Snapline.ico" Condition="Exists('Resources\Snapline.ico')">
+      <LogicalName>Snapline.Resources.Snapline.ico</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

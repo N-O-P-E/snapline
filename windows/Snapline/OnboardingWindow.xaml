@@ -1,0 +1,95 @@
+<Window x:Class="Snapline.OnboardingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Snapline"
+        Title="Snapline Setup"
+        Height="520" Width="560"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#1d1d1f"
+        Foreground="White"
+        FontFamily="Segoe UI">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#2c2c2e"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#3a3a3c"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock Text="Snapline" FontSize="28" FontWeight="Bold"/>
+            <TextBlock Text="Snap. Paste. Done." FontSize="14" Opacity="0.7" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <!-- Step 1: Welcome -->
+            <StackPanel x:Name="Step1Welcome" Visibility="Visible">
+                <TextBlock Text="Welcome" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="20" Opacity="0.85">
+                    Snapline lives in your system tray. Hit a hotkey, drag a region with the Snipping Tool, and the screenshot lands directly in the app of your choice.
+                    <LineBreak/><LineBreak/>
+                    Built for piping screenshots into a Claude Code TUI session, but works with any app that accepts pasted images — Claude desktop, Slack, Figma, Discord, you name it.
+                    <LineBreak/><LineBreak/>
+                    No permission prompts to fight with — Windows lets us register global hotkeys and read the clipboard out of the box.
+                </TextBlock>
+            </StackPanel>
+
+            <!-- Step 2: Target App -->
+            <StackPanel x:Name="Step2Target" Visibility="Collapsed">
+                <TextBlock Text="Pick your target app" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="20" Opacity="0.85" Margin="0,0,0,16">
+                    Choose the app that should receive your screenshots. Pick a running app from the list, or browse for any .exe.
+                </TextBlock>
+                <ComboBox x:Name="TargetCombo" Height="32"/>
+                <Button x:Name="BrowseButton" Content="Browse for .exe…" HorizontalAlignment="Left"
+                        Margin="0,12,0,0" Click="BrowseButton_Click"/>
+                <TextBlock x:Name="TargetSelectedLabel" Margin="0,16,0,0" Opacity="0.7" FontSize="12"/>
+            </StackPanel>
+
+            <!-- Step 3: Hotkeys -->
+            <StackPanel x:Name="Step3Hotkeys" Visibility="Collapsed">
+                <TextBlock Text="Bind your hotkeys" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="20" Opacity="0.85" Margin="0,0,0,16">
+                    Click each box and press the combination you'd like to use. Press Esc to clear.
+                    <LineBreak/>
+                    Suggested mirror of the Mac defaults: Ctrl+Shift+9 and Ctrl+Alt+Shift+9.
+                </TextBlock>
+
+                <TextBlock Text="Single Shot — pastes into target, brings it to the front" Margin="0,0,0,4" FontSize="12" Opacity="0.7"/>
+                <local:HotkeyCaptureBox x:Name="SingleShotBox" Height="36" FontSize="14" Padding="8,6"/>
+
+                <TextBlock Text="Multi Shot — pastes into target's last window, returns focus" Margin="0,16,0,4" FontSize="12" Opacity="0.7"/>
+                <local:HotkeyCaptureBox x:Name="MultiShotBox" Height="36" FontSize="14" Padding="8,6"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="StepIndicator" Grid.Column="0" VerticalAlignment="Center" Opacity="0.5" Text="Step 1 of 3"/>
+            <Button x:Name="BackButton" Grid.Column="2" Content="Back" Margin="0,0,8,0" Click="BackButton_Click" IsEnabled="False"/>
+            <Button x:Name="NextButton" Grid.Column="3" Content="Next" Click="NextButton_Click"/>
+        </Grid>
+    </Grid>
+</Window>
