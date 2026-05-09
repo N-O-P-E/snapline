@@ -3,7 +3,12 @@
 ; Produces:   ..\dist\Snapline-Setup-{version}.exe
 
 #define MyAppName        "Snapline"
-#define MyAppVersion     "1.0.9"
+; MyAppVersion is normally injected by build.ps1 via /DMyAppVersion=<x.y.z>
+; (which reads /VERSION at the repo root). The fallback below only kicks in
+; when ISCC is invoked directly without that flag.
+#ifndef MyAppVersion
+  #define MyAppVersion   "0.3.0"
+#endif
 #define MyAppPublisher   "studionope"
 #define MyAppURL         "https://github.com/N-O-P-E/snapline"
 #define MyAppExeName     "Snapline.exe"

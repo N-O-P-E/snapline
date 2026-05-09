@@ -43,6 +43,12 @@ $buildDir    = Join-Path $root 'build'
 $distDir     = Join-Path $root 'dist'
 $installerScript = Join-Path $root 'installer\Snapline.iss'
 
+# Read shared version from /VERSION (the macOS build.sh does the same).
+$versionFile = Join-Path (Split-Path $root -Parent) 'VERSION'
+$version = if (Test-Path $versionFile) {
+    (Get-Content $versionFile -Raw).Trim()
+} else { '0.0.0' }
+
 Write-Host "Snapline Windows build" -ForegroundColor Cyan
 Write-Host "  Configuration : $Configuration"
 Write-Host "  Build dir     : $buildDir"
@@ -57,6 +63,9 @@ dotnet publish $projectFile `
     -r win-x64 `
     --self-contained true `
     -p:PublishSingleFile=true `
+    -p:Version=$version `
+    -p:AssemblyVersion=$version `
+    -p:FileVersion=$version `
     -o $buildDir
 
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed (exit $LASTEXITCODE)" }
@@ -98,8 +107,8 @@ if (-not $isccCandidates) {
 }
 $iscc = $isccCandidates
 
-Write-Host "Compiling installer with Inno Setup ($iscc)…" -ForegroundColor Cyan
-& $iscc $installerScript
+Write-Host "Compiling installer with Inno Setup ($iscc), version $version…" -ForegroundColor Cyan
+& $iscc "/DMyAppVersion=$version" $installerScript
 if ($LASTEXITCODE -ne 0) { throw "ISCC failed (exit $LASTEXITCODE)" }
 
 if ($SignCert) {

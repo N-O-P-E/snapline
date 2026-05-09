@@ -33,6 +33,14 @@ cp "${BUILD_DIR}/${APP_NAME}" "${APP_DIR}/Contents/MacOS/${APP_NAME}"
 cp Resources/Info.plist "${APP_DIR}/Contents/Info.plist"
 printf 'APPL????' > "${APP_DIR}/Contents/PkgInfo"
 
+# --- Stamp the bundle's CFBundleShortVersionString from the root VERSION ---
+if [[ -f "VERSION" ]]; then
+    VERSION=$(tr -d '[:space:]' < VERSION)
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" \
+        "${APP_DIR}/Contents/Info.plist"
+    echo "→ Stamped version $VERSION"
+fi
+
 # --- App icon: PNG → .icns ---------------------------------------------------
 if [[ -f "Resources/AppIcon.png" ]]; then
     echo "→ Generating AppIcon.icns from Resources/AppIcon.png…"

@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    name: macOS build & upload
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build .app + .dmg
+        run: |
+          ./build.sh
+          ./installer/build-dmg.sh
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.dmg
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+
+  windows:
+    name: Windows build & upload
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build .exe + installer
+        shell: pwsh
+        run: pwsh windows\build.ps1
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: windows/dist/*.exe
+          fail_on_unmatched_files: true
+          generate_release_notes: true

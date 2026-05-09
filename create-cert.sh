@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # One-time setup: creates a self-signed code-signing certificate in your login
-# keychain so every ClaudeShot rebuild signs with the same identity. macOS TCC
+# keychain so every Snapline rebuild signs with the same identity. macOS TCC
 # (Accessibility, Screen Recording, etc.) then keeps your grants across rebuilds.
 
 set -euo pipefail
@@ -35,7 +35,7 @@ echo "→ Generating self-signed code-signing certificate…"
     -keyout "$TMP/key.pem" -out "$TMP/cert.pem" \
     -config "$TMP/req.conf" 2>/dev/null
 
-P12_PASS="claudeshot"
+P12_PASS="snapline"
 /usr/bin/openssl pkcs12 -export -inkey "$TMP/key.pem" -in "$TMP/cert.pem" \
     -name "$CERT_NAME" -out "$TMP/cert.p12" -passout "pass:$P12_PASS" 2>/dev/null
 
@@ -48,4 +48,4 @@ echo
 echo "✓ Created '$CERT_NAME' in your login keychain."
 echo "  Subsequent rebuilds will sign stably; TCC permissions will stick."
 echo
-echo "Next: ./build.sh && open build/ClaudeShot.app"
+echo "Next: ./build.sh && open build/Snapline.app"

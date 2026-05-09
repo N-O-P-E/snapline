@@ -1,0 +1,65 @@
+name: Bug report
+description: Snapline isn't working as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. The more concrete the repro, the faster we can fix it.
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS
+        - Windows
+        - Both
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: OS version
+      placeholder: "e.g. macOS 14.4, Windows 11 23H2"
+    validations:
+      required: true
+  - type: input
+    id: snapline-version
+    attributes:
+      label: Snapline version
+      description: From `/VERSION` if you built from source, or the menu/about info.
+      placeholder: "e.g. 0.3.0"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what actually happened?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Press ⌘⇧9
+        2. Drag a region
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: target-app
+    attributes:
+      label: Target app
+      description: Which app were you pasting into? (Bundle ID for Mac, .exe path for Windows.)
+      placeholder: "e.g. com.anthropic.claudefordesktop or C:\\Users\\me\\AppData\\Local\\Programs\\Claude\\Claude.exe"
+  - type: textarea
+    id: log
+    attributes:
+      label: Diagnostic log excerpt
+      description: |
+        Paste the relevant lines from the log around the time of the failure.
+        - macOS: `~/Library/Logs/Snapline/snapline.log`
+        - Windows: `%APPDATA%\Snapline\snapline.log`
+      render: text

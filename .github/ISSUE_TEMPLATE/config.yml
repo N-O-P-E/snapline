@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/N-O-P-E/snapline/security/policy
+    about: Don't open public issues for vulnerabilities — see SECURITY.md.
+  - name: Studio N.O.P.E.
+    url: https://studionope.nl
+    about: General questions about Studio N.O.P.E. or other tools.

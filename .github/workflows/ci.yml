@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    name: macOS build
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Print Swift version
+        run: swift --version
+
+      - name: Build .app
+        run: ./build.sh
+
+      - name: Build .dmg installer
+        run: ./installer/build-dmg.sh
+
+      - name: Upload .dmg artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Snapline-macOS
+          path: dist/*.dmg
+          if-no-files-found: error
+          retention-days: 14
+
+  windows:
+    name: Windows build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup --no-progress -y
+
+      - name: Build .exe + installer
+        shell: pwsh
+        run: pwsh windows\build.ps1
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Snapline-Windows
+          path: windows/dist/*.exe
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,11 @@
+# Every PR needs review approval from one of the maintainers below.
+# When combined with branch protection's "Require review from Code Owners",
+# Tijs and Bas can also bypass the requirement (configured in repo settings).
+
+*                       @tijsluitse @BasFijneman
+/Sources/                @BasFijneman
+/windows/                @tijsluitse @BasFijneman
+/installer/              @BasFijneman
+/.github/                @tijsluitse @BasFijneman
+README.md                @tijsluitse @BasFijneman
+SECURITY.md              @tijsluitse @BasFijneman
