@@ -20,14 +20,27 @@ Built for piping screenshots into a Claude Code TUI session, but works with any 
 
 ## Hotkeys
 
-- **Single Shot** (⌘⇧9 on Mac, user-bound on Windows). Brings your target app to front, pastes the screenshot.
-- **Multi Shot** (⌘⌥⇧9 on Mac, user-bound on Windows). Starts a capture session — keep snipping regions; a small HUD shows the running count. Press the multi-shot hotkey again (or Esc inside the snipper) to finish, and every captured image gets pasted into the target back-to-back.
+Both hotkeys are **user-bound on Mac and Windows** — pick whatever combo you like during onboarding (or rebind any time from the menu / tray).
+
+- **Single Shot** (default ⌘⇧9 on Mac). Brings your target app to front, pastes the screenshot.
+- **Multi Shot** (default ⌘⌥⇧9 on Mac). Starts a capture session — keep snipping regions; a small HUD shows the running count. Press the multi-shot hotkey again (or Esc inside the snipper) to finish, and every captured image gets pasted into the target back-to-back.
 
 ## Install
 
-Pick your platform. Both produce a tray app with the same workflow.
+### Download
 
-### macOS
+Pre-built installers for every release live on the [**Releases page**](https://github.com/N-O-P-E/snapline/releases) — grab the `.dmg` (macOS) or `.exe` (Windows) from the latest tag.
+
+> **First-launch heads-up.** The downloads are signed with a self-signed cert (we're not paying €1000/year for Apple Developer ID + Microsoft Authenticode just to ship a €6 utility). On first launch:
+>
+> - **macOS:** Gatekeeper says *"cannot be opened because Apple cannot check it for malicious software"*. Click **Done**, then **System Settings → Privacy & Security → Open Anyway** next to the Snapline mention. Confirm. Future launches are silent.
+> - **Windows:** SmartScreen shows a *"Windows protected your PC"* warning. Click **More info → Run anyway**.
+
+### Build from source
+
+Both platforms produce a tray/menu-bar app with the same workflow.
+
+#### macOS
 
 > Prerequisites: macOS 13+, Xcode Command Line Tools (`xcode-select --install`).
 
@@ -51,7 +64,7 @@ open build/Snapline.app
 # → dist/Snapline-<version>.dmg
 ```
 
-### Windows
+#### Windows
 
 > Prerequisites: Windows 10 (1809+) or 11, [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). Inno Setup is optional and only needed if you want to build the installer locally.
 
@@ -65,18 +78,19 @@ pwsh windows\build.ps1
 # Run it directly, or install via the generated installer
 .\windows\build\Snapline.exe
 # - or -
-.\windows\dist\Snapline-Setup-1.0.0.exe
+.\windows\dist\Snapline-Setup-<version>.exe
 ```
 
-The Windows app needs no special permissions — global hotkeys, clipboard, and `SendInput` all work out of the box. First launch opens a 3-step wizard: welcome, pick a target app, bind your hotkeys. See [windows/README.md](windows/README.md) for build internals.
+The Windows app needs no special permissions — global hotkeys, clipboard, and `SendInput` all work out of the box. First launch opens a wizard: welcome, pick a target app, bind your two hotkeys. See [windows/README.md](windows/README.md) for build internals.
 
-On macOS the onboarding window asks for two permissions and one preference:
+On macOS the onboarding window walks through four steps:
 
 1. **Accessibility** — required to synthesize the paste keystroke into your target app.
 2. **Screen Recording** — required by macOS's region selector (`screencapture`).
 3. **Target App** — pick the app you want screenshots to be pasted into (Ghostty, iTerm2, Warp, Claude desktop, anything).
+4. **Hotkeys** — bind your single-shot and multi-shot combos (or keep the defaults).
 
-On Windows the onboarding skips the permission steps entirely, asks for the target app, and lets you bind your two hotkeys.
+On Windows the onboarding skips the permission steps entirely; everything else mirrors macOS.
 
 After that, the hotkeys work from anywhere.
 
@@ -99,12 +113,13 @@ Two parallel codebases, each using its platform's blessed framework. Same UX, sa
 Sources/Snapline/
 ├── main.swift              # NSApplication entry, .accessory activation policy
 ├── AppDelegate.swift       # Status bar item, target picker submenu, onboarding dispatch
-├── HotkeyManager.swift     # Carbon RegisterEventHotKey for both ⌘⇧9 and ⌘⌥⇧9
+├── HotkeyManager.swift     # Carbon RegisterEventHotKey, re-registers on settings change
+├── HotkeyDisplay.swift     # Format Carbon key codes as ⌘⇧9-style glyphs (UCKeyTranslate)
 ├── CaptureAndPaste.swift   # screencapture -i -c -x → activate target → CGEvent paste
 │                           # multi-shot loops captures behind a HUD, then pastes all on session end
 ├── MenuBarIcon.swift       # Hand-coded NSBezierPath template image
-├── OnboardingWindow.swift  # SwiftUI 3-step setup: Accessibility, Screen Recording, Target
-└── Settings.swift          # UserDefaults wrapper
+├── OnboardingWindow.swift  # SwiftUI 4-step setup: Accessibility, Screen Recording, Target, Hotkeys
+└── Settings.swift          # UserDefaults wrapper (incl. user-bound hotkeys)
 ```
 
 **Windows** (`windows/Snapline/`) — C# / .NET 10, WPF + WinForms NotifyIcon, `RegisterHotKey`, `ms-screenclip:`, `SendInput`. Zero external NuGet packages. See [windows/README.md](windows/README.md) for the file map.
@@ -117,7 +132,7 @@ macOS attaches Privacy & Security grants (Accessibility, Screen Recording) to a 
 
 The cert never leaves your machine.
 
-Windows doesn't have an equivalent of TCC — there's nothing to grant or persist. For paid distribution you'll still want an Authenticode (OV or EV) cert so SmartScreen doesn't warn users; `windows\build.ps1` accepts a PFX via `-SignCert`.
+Windows doesn't have an equivalent of TCC — there's nothing to grant or persist. SmartScreen will warn on first launch (the Releases note above tells users how to bypass it). If you happen to have an Authenticode cert lying around, `windows\build.ps1` accepts a PFX via `-SignCert`, which makes the warning go away — but it isn't required.
 
 ## Resetting
 
@@ -144,17 +159,23 @@ Creative Solution Engineers using AI's infinite possibilities to help humans rea
 
 <table>
   <tr>
-    <td align="center" width="120">
+    <td align="center" width="130">
       <a href="https://github.com/tijsluitse">
-        <img src="assets/authors/tijs.png" width="88" height="88" alt="Tijs Luitse"/><br/>
-        <b>@tijsluitse</b>
+        <img src="assets/authors/tijs.png" width="88" height="88" alt="Tijs Luitse"/>
       </a>
+      <br/>
+      <b>Tijs Luitse</b><br/>
+      <a href="https://github.com/tijsluitse">@tijsluitse</a><br/>
+      <a href="https://twitter.com/TisInternet">𝕏 @TisInternet</a>
     </td>
-    <td align="center" width="120">
+    <td align="center" width="130">
       <a href="https://github.com/BasFijneman">
-        <img src="assets/authors/bas.png" width="88" height="88" alt="Bas Fijneman"/><br/>
-        <b>@basfijneman</b>
+        <img src="assets/authors/bas.png" width="88" height="88" alt="Bas Fijneman"/>
       </a>
+      <br/>
+      <b>Bas Fijneman</b><br/>
+      <a href="https://github.com/BasFijneman">@basfijneman</a><br/>
+      <a href="https://twitter.com/bas_fijneman">𝕏 @bas_fijneman</a>
     </td>
     <td>
       We're two guys who believe the best tools are the ones that get out of your way. We built Snapline because pasting a screenshot into your AI conversation shouldn't take three clicks, a window switch, and a paste shortcut you never remember. It should be one hotkey, drag a region, done — straight into the conversation you're already in.
