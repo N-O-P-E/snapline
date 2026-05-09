@@ -138,6 +138,43 @@ Remove-Item "$env:APPDATA\Snapline\settings.json"
 & "C:\Program Files\Snapline\Snapline.exe"
 ```
 
+## About Studio N.O.P.E.
+
+Creative Solution Engineers using AI's infinite possibilities to help humans realise their dreams.
+
+<table>
+  <tr>
+    <td align="center" width="120">
+      <a href="https://github.com/tijsluitse">
+        <img src="assets/authors/tijs.png" width="88" height="88" alt="Tijs Luitse"/><br/>
+        <b>@tijsluitse</b>
+      </a>
+    </td>
+    <td align="center" width="120">
+      <a href="https://github.com/BasFijneman">
+        <img src="assets/authors/bas.png" width="88" height="88" alt="Bas Fijneman"/><br/>
+        <b>@basfijneman</b>
+      </a>
+    </td>
+    <td>
+      We're two guys who believe the best tools are the ones that get out of your way. We built Snapline because pasting a screenshot into your AI conversation shouldn't take three clicks, a window switch, and a paste shortcut you never remember. It should be one hotkey, drag a region, done — straight into the conversation you're already in.
+    </td>
+  </tr>
+</table>
+
+We made this open source because we think everybody deserves useful tools, not just the people who can afford them. When sharing context with your AI is friction-free, you actually do it — and the conversation gets ten times sharper. Open source means the community can shape this into exactly what they need.
+
+Want to work with us? We help teams build smarter workflows with AI-powered tooling, Shopify development, and creative engineering. Reach out at [info@studionope.nl](mailto:info@studionope.nl) or visit [studionope.nl](https://studionope.nl).
+
+### Other tools we ship
+
+- **[Operations](https://operations.studionope.nl)** — Command Center for every new tab.
+- **[Glitches](https://glitches.studionope.nl)** — Report visual issues without the hassle.
+
 ## License
 
-[MIT](LICENSE) © studionope
+[MIT](LICENSE) © Studio N.O.P.E.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=N-O-P-E/snapline&type=Date)](https://star-history.com/#N-O-P-E/snapline&Date)
