@@ -57,7 +57,10 @@ private final class PermissionState: ObservableObject {
 
     init() {
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.refresh() }
+            // The timer fires on whichever runloop scheduled it (main here),
+            // so we're already main-isolated. Skip the Task hop that would
+            // otherwise trip Swift-6 strict concurrency.
+            MainActor.assumeIsolated { self?.refresh() }
         }
     }
 

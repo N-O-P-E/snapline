@@ -17,9 +17,15 @@ mkdir -p "${BUILD_DIR}"
 # manifest link error regardless of how Package.swift is written. swiftc
 # avoids the broken manifest path entirely.
 echo "→ Compiling Sources/Snapline/*.swift…"
+# Pin Swift 5 mode: newer Xcode toolchains default to Swift 6 with strict
+# concurrency, which would error on patterns that only warn under Swift 5.
+# Pin the host arch via `uname -m` so this works on both Apple Silicon
+# CI runners and Intel hosts without manual tweaking.
+ARCH=$(uname -m)
 swiftc \
     -O \
-    -target arm64-apple-macos13.0 \
+    -swift-version 5 \
+    -target "${ARCH}-apple-macos13.0" \
     -module-name "${APP_NAME}" \
     -o "${BUILD_DIR}/${APP_NAME}" \
     Sources/Snapline/*.swift

@@ -56,7 +56,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             forName: HotkeyBinding.didChangeNotification,
             object: nil, queue: .main
         ) { [weak self] _ in
-            Task { @MainActor in self?.refreshHotkeyMenuTitles() }
+            // queue: .main means we're already on the main thread; this avoids
+            // the Swift-6 strict-concurrency error from spawning a Task that
+            // captures a weak self from a @Sendable closure.
+            MainActor.assumeIsolated { self?.refreshHotkeyMenuTitles() }
         }
 
         if !Settings.hasCompletedOnboarding {
