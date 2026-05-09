@@ -31,10 +31,17 @@ Both hotkeys are **user-bound on Mac and Windows** — pick whatever combo you l
 
 Pre-built installers for every release live on the [**Releases page**](https://github.com/N-O-P-E/snapline/releases) — grab the `.dmg` (macOS) or `.exe` (Windows) from the latest tag.
 
-> **First-launch heads-up.** The downloads are signed with a self-signed cert (we're not paying €1000/year for Apple Developer ID + Microsoft Authenticode just to ship a €6 utility). On first launch:
+> **First-launch heads-up.** The downloads are signed with a self-signed cert (we're not paying €1000/year for Apple Developer ID + Microsoft Authenticode just to ship a €6 utility). You'll need to bypass the OS gatekeeper exactly *once*:
 >
-> - **macOS:** Gatekeeper says *"cannot be opened because Apple cannot check it for malicious software"*. Click **Done**, then **System Settings → Privacy & Security → Open Anyway** next to the Snapline mention. Confirm. Future launches are silent.
-> - **Windows:** SmartScreen shows a *"Windows protected your PC"* warning. Click **More info → Run anyway**.
+> **macOS** — happens twice: once for the `.dmg`, once for the app on first launch.
+> 1. Don't double-click the `.dmg`. **Right-click** it → **Open**.
+> 2. macOS warns *"Apple could not verify…"* but this time the dialog has an **Open** button. Click it. The styled drag-to-Applications window appears.
+> 3. Drag `Snapline.app` onto `Applications`, then eject the DMG.
+> 4. **Right-click** `Snapline.app` in `/Applications` → **Open**. Same warning, click **Open**. Done — future launches are silent.
+>
+> If a dialog only shows **Done** / **Move to Bin** with no Open button (macOS 14+), click **Done**, then go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to the Snapline mention.
+>
+> **Windows** — SmartScreen shows *"Windows protected your PC"*. Click **More info → Run anyway**.
 
 ### Build from source
 
