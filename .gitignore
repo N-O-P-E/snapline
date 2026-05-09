@@ -5,3 +5,12 @@ build/
 DerivedData/
 *.swp
 Package.resolved
+
+# Windows / .NET
+windows/build/
+windows/dist/
+windows/**/bin/
+windows/**/obj/
+windows/**/*.user
+windows/.vs/
+*.suo
