@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 import ApplicationServices
+import Carbon.HIToolbox
 
 @MainActor
 final class OnboardingWindowController: NSWindowController, NSWindowDelegate {
@@ -49,6 +50,8 @@ private final class PermissionState: ObservableObject {
     @Published var accessibilityGranted: Bool = AXIsProcessTrusted()
     @Published var screenRecordingGranted: Bool = CGPreflightScreenCaptureAccess()
     @Published var targetBundleID: String? = Settings.targetBundleID
+    @Published var singleShotHotkey: HotkeyBinding = Settings.singleShotHotkey
+    @Published var multiShotHotkey:  HotkeyBinding = Settings.multiShotHotkey
 
     private var timer: Timer?
 
@@ -62,6 +65,8 @@ private final class PermissionState: ObservableObject {
         accessibilityGranted = AXIsProcessTrusted()
         screenRecordingGranted = CGPreflightScreenCaptureAccess()
         targetBundleID = Settings.targetBundleID
+        singleShotHotkey = Settings.singleShotHotkey
+        multiShotHotkey = Settings.multiShotHotkey
     }
 
     var allReady: Bool {
@@ -122,6 +127,9 @@ private struct Sidebar: View {
                 StepListItem(number: 3, title: "Pick Target App",
                              subtitle: "Choose where snapshots will be sent.",
                              done: state.targetBundleID != nil)
+                StepListItem(number: 4, title: "Hotkeys",
+                             subtitle: "Customize your single- and multi-shot keys.",
+                             done: true)
             }
             .padding(.top, 36)
 
@@ -247,6 +255,10 @@ private struct MainPane: View {
                     Connector()
 
                     TargetAppCard(state: state)
+
+                    Connector()
+
+                    HotkeysCard(state: state)
                 }
                 .padding(.horizontal, 28)
                 .padding(.top, 28)
@@ -505,6 +517,162 @@ private struct ChooseRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Hotkeys card
+
+private struct HotkeysCard: View {
+    @ObservedObject var state: PermissionState
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center, spacing: 16) {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(LinearGradient(
+                        colors: [Color(red: 0.95, green: 0.55, blue: 0.30),
+                                 Color(red: 0.85, green: 0.35, blue: 0.20)],
+                        startPoint: .top, endPoint: .bottom))
+                    .frame(width: 56, height: 56)
+                    .overlay(
+                        Image(systemName: "command")
+                            .font(.system(size: 22, weight: .regular))
+                            .foregroundStyle(.white)
+                    )
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("4. Hotkeys")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.white)
+                    Text("Pick the global key combos that trigger Snapline.")
+                        .font(.system(size: 12.5))
+                        .foregroundStyle(.white.opacity(0.55))
+                }
+                Spacer()
+
+                Button("Reset") {
+                    Settings.singleShotHotkey = Settings.defaultSingleShot
+                    Settings.multiShotHotkey  = Settings.defaultMultiShot
+                    state.refresh()
+                }
+                .buttonStyle(SecondaryButtonStyle())
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
+
+            VStack(spacing: 8) {
+                HotkeyCaptureRow(
+                    title: "Single Shot",
+                    subtitle: "Brings target to front, then pastes.",
+                    binding: state.singleShotHotkey
+                ) { newValue in
+                    Settings.singleShotHotkey = newValue
+                    state.singleShotHotkey = newValue
+                }
+
+                HotkeyCaptureRow(
+                    title: "Multi Shot",
+                    subtitle: "Capture multiple, then paste them all.",
+                    binding: state.multiShotHotkey
+                ) { newValue in
+                    Settings.multiShotHotkey = newValue
+                    state.multiShotHotkey = newValue
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.bottom, 12)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.white.opacity(0.04))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.07), lineWidth: 1)
+        )
+    }
+}
+
+private struct HotkeyCaptureRow: View {
+    let title: String
+    let subtitle: String
+    let binding: HotkeyBinding
+    let onChange: (HotkeyBinding) -> Void
+
+    @State private var recording = false
+    @State private var monitor: Any?
+
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.white)
+                Text(subtitle)
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(.white.opacity(0.5))
+            }
+            Spacer()
+
+            Text(recording ? "Press a combo…" : HotkeyDisplay.format(binding))
+                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                .foregroundStyle(recording ? Color.accentColor : .white)
+                .frame(minWidth: 110, alignment: .center)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.white.opacity(recording ? 0.10 : 0.06))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(recording ? Color.accentColor : Color.clear, lineWidth: 1)
+                )
+
+            Button(recording ? "Cancel" : "Record") {
+                if recording { stopRecording() } else { startRecording() }
+            }
+            .buttonStyle(PrimaryButtonStyle(prominent: !recording))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.white.opacity(0.025))
+        )
+        .onDisappear { stopRecording() }
+    }
+
+    private func startRecording() {
+        recording = true
+        monitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
+            // Esc with no modifiers = cancel.
+            if event.keyCode == kVK_Escape && event.modifierFlags
+                .intersection(.deviceIndependentFlagsMask).isEmpty {
+                stopRecording()
+                return nil
+            }
+
+            let mods = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+                .subtracting(.capsLock)
+            // Require at least one modifier so the user can still type elsewhere.
+            guard !mods.isEmpty else { return event }
+
+            let carbon = CarbonModifiers.mask(from: mods)
+            let new = HotkeyBinding(keyCode: UInt32(event.keyCode), modifiers: carbon)
+            onChange(new)
+            stopRecording()
+            return nil
+        }
+    }
+
+    private func stopRecording() {
+        recording = false
+        if let m = monitor {
+            NSEvent.removeMonitor(m)
+            monitor = nil
+        }
     }
 }
 

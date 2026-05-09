@@ -7,9 +7,38 @@ final class HotkeyManager {
     var onTrigger: (Action) -> Void = { _ in }
     private var refs: [EventHotKeyRef?] = []
     private var handlerRef: EventHandlerRef?
+    private var observer: NSObjectProtocol?
 
     func register() {
+        installHandlerIfNeeded()
+        registerCurrentBindings()
+
+        observer = NotificationCenter.default.addObserver(
+            forName: HotkeyBinding.didChangeNotification,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.reregister()
+        }
+    }
+
+    func reregister() {
+        unregisterAll()
+        registerCurrentBindings()
+    }
+
+    private func registerCurrentBindings() {
         let signature: OSType = 0x434C5348 // 'CLSH'
+        let single = Settings.singleShotHotkey
+        let multi  = Settings.multiShotHotkey
+
+        registerKey(signature: signature, id: .singleShot,
+                    keyCode: single.keyCode, modifiers: single.modifiers)
+        registerKey(signature: signature, id: .multiShot,
+                    keyCode: multi.keyCode, modifiers: multi.modifiers)
+    }
+
+    private func installHandlerIfNeeded() {
+        guard handlerRef == nil else { return }
         var eventType = EventTypeSpec(
             eventClass: OSType(kEventClassKeyboard),
             eventKind: OSType(kEventHotKeyPressed)
@@ -42,27 +71,24 @@ final class HotkeyManager {
             userData,
             &handlerRef
         )
-
-        // ⌘⇧9 — single shot (focus target, then paste)
-        registerKey(signature: signature, id: .singleShot,
-                    keyCode: UInt32(kVK_ANSI_9),
-                    modifiers: UInt32(cmdKey | shiftKey))
-
-        // ⌘⌥⇧9 — multi shot (background paste, no focus change)
-        registerKey(signature: signature, id: .multiShot,
-                    keyCode: UInt32(kVK_ANSI_9),
-                    modifiers: UInt32(cmdKey | shiftKey | optionKey))
     }
 
     private func registerKey(signature: OSType, id: Action, keyCode: UInt32, modifiers: UInt32) {
+        guard keyCode != 0 else { return }
         let hotKeyID = EventHotKeyID(signature: signature, id: id.rawValue)
         var ref: EventHotKeyRef?
         RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetApplicationEventTarget(), 0, &ref)
         refs.append(ref)
     }
 
-    deinit {
+    private func unregisterAll() {
         for ref in refs { if let r = ref { UnregisterEventHotKey(r) } }
+        refs.removeAll()
+    }
+
+    deinit {
+        unregisterAll()
         if let h = handlerRef { RemoveEventHandler(h) }
+        if let obs = observer { NotificationCenter.default.removeObserver(obs) }
     }
 }

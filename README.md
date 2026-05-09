@@ -21,7 +21,7 @@ Built for piping screenshots into a Claude Code TUI session, but works with any 
 ## Hotkeys
 
 - **Single Shot** (⌘⇧9 on Mac, user-bound on Windows). Brings your target app to front, pastes the screenshot.
-- **Multi Shot** (⌘⌥⇧9 on Mac, user-bound on Windows). Pastes into the target's last-used window and returns focus to where you were — rip off more screenshots without losing your place.
+- **Multi Shot** (⌘⌥⇧9 on Mac, user-bound on Windows). Starts a capture session — keep snipping regions; a small HUD shows the running count. Press the multi-shot hotkey again (or Esc inside the snipper) to finish, and every captured image gets pasted into the target back-to-back.
 
 ## Install
 
@@ -45,6 +45,10 @@ cd snapline
 
 # 3. Launch — onboarding window walks you through the rest
 open build/Snapline.app
+
+# 4. (Optional) Build a drag-to-Applications .dmg installer
+./installer/build-dmg.sh
+# → dist/Snapline-<version>.dmg
 ```
 
 ### Windows
@@ -97,7 +101,7 @@ Sources/Snapline/
 ├── AppDelegate.swift       # Status bar item, target picker submenu, onboarding dispatch
 ├── HotkeyManager.swift     # Carbon RegisterEventHotKey for both ⌘⇧9 and ⌘⌥⇧9
 ├── CaptureAndPaste.swift   # screencapture -i -c -x → activate target → CGEvent paste
-│                           # (multi-shot uses CGEvent.postToPid for background paste)
+│                           # multi-shot loops captures behind a HUD, then pastes all on session end
 ├── MenuBarIcon.swift       # Hand-coded NSBezierPath template image
 ├── OnboardingWindow.swift  # SwiftUI 3-step setup: Accessibility, Screen Recording, Target
 └── Settings.swift          # UserDefaults wrapper

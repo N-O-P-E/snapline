@@ -8,8 +8,21 @@ BUILD_DIR=".build/release"
 APP_DIR="build/${APP_NAME}.app"
 CERT_NAME="Snapline Self-Signed"
 
-echo "→ Building Swift package (release)…"
-swift build -c release
+mkdir -p "${BUILD_DIR}"
+
+# We compile sources directly with swiftc rather than going through SwiftPM.
+# The project has zero external dependencies, and Apple's CommandLineTools
+# install ships a libPackageDescription.dylib whose symbols don't match its
+# accompanying swiftinterface, so any `swift build` invocation fails with a
+# manifest link error regardless of how Package.swift is written. swiftc
+# avoids the broken manifest path entirely.
+echo "→ Compiling Sources/Snapline/*.swift…"
+swiftc \
+    -O \
+    -target arm64-apple-macos13.0 \
+    -module-name "${APP_NAME}" \
+    -o "${BUILD_DIR}/${APP_NAME}" \
+    Sources/Snapline/*.swift
 
 echo "→ Assembling ${APP_NAME}.app bundle…"
 rm -rf "${APP_DIR}"
@@ -44,7 +57,7 @@ fi
 
 # --- Code signing -----------------------------------------------------------
 CERT_HASH=$(security find-certificate -c "$CERT_NAME" -Z 2>/dev/null \
-    | awk '/SHA-1 hash/ {print $NF; exit}')
+    | awk '/SHA-1 hash/ {print $NF; exit}' || true)
 
 if [[ -n "${CERT_HASH:-}" ]]; then
     echo "→ Signing with stable identity '$CERT_NAME' (SHA-1 ${CERT_HASH:0:12}…)"

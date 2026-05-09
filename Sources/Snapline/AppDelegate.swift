@@ -8,6 +8,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var targetMenuItem: NSMenuItem!
     private let pasteSubmenu = NSMenu()
     private var pasteMenuItem: NSMenuItem!
+    private var singleShotMenuItem: NSMenuItem!
+    private var multiShotMenuItem: NSMenuItem!
+    private var hotkeyObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -17,8 +20,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Single Shot  ⌘⇧9", action: #selector(triggerSingle), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Multi Shot  ⌘⌥⇧9", action: #selector(triggerMulti), keyEquivalent: ""))
+        singleShotMenuItem = NSMenuItem(title: "", action: #selector(triggerSingle), keyEquivalent: "")
+        multiShotMenuItem  = NSMenuItem(title: "", action: #selector(triggerMulti),  keyEquivalent: "")
+        menu.addItem(singleShotMenuItem)
+        menu.addItem(multiShotMenuItem)
+        refreshHotkeyMenuTitles()
 
         targetMenuItem = NSMenuItem(title: "Target App", action: nil, keyEquivalent: "")
         targetMenuItem.submenu = targetSubmenu
@@ -39,9 +45,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         refreshPasteMenuTitle()
 
         hotkey.onTrigger = { [weak self] action in
-            self?.runCapture(mode: action == .multiShot ? .background : .focus)
+            switch action {
+            case .singleShot: self?.runCapture(mode: .focus)
+            case .multiShot:  CaptureAndPaste.runMultiShot()
+            }
         }
         hotkey.register()
+
+        hotkeyObserver = NotificationCenter.default.addObserver(
+            forName: HotkeyBinding.didChangeNotification,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.refreshHotkeyMenuTitles() }
+        }
 
         if !Settings.hasCompletedOnboarding {
             // Defer slightly so the status bar item is fully laid out before
@@ -52,12 +68,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
+    private func refreshHotkeyMenuTitles() {
+        singleShotMenuItem?.title = "Single Shot  \(HotkeyDisplay.format(Settings.singleShotHotkey))"
+        multiShotMenuItem?.title  = "Multi Shot  \(HotkeyDisplay.format(Settings.multiShotHotkey))"
+    }
+
     @objc private func showOnboarding() {
         OnboardingWindowController.show()
     }
 
     @objc private func triggerSingle() { runCapture(mode: .focus) }
-    @objc private func triggerMulti()  { runCapture(mode: .background) }
+    @objc private func triggerMulti()  { CaptureAndPaste.runMultiShot() }
 
     private func runCapture(mode: CaptureMode) {
         DispatchQueue.global(qos: .userInitiated).async {
